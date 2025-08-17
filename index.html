@@ -69,6 +69,23 @@
       transform: none;
       box-shadow: none;
     }
+    .feature-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      background: #f39c12;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: not-allowed;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: 0.2s ease;
+    }
+    .feature-btn:hover {
+      background: #d78e10;
+    }
   </style>
 </head>
 <body>
@@ -87,5 +104,8 @@
       Coming Soon... <span>🔒</span>
     </button>
   </div>
+  <button class="feature-btn">
+    EssayScroll Feature 🔒
+  </button>
 </body>
 </html>
