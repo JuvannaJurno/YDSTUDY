@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Quiz</title>
+    <style>
+        :root {
+            --primary: #4285f4;
+            --success: #34a853;
+            --danger: #ea4335;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --accent: #673ab7;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 15px;
+            max-width: 100%;
+            margin: 0 auto;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+        
+        .progress-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin: 15px 0;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .quiz-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+        
+        .question-container {
+            background-color: #f9f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .question {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--dark);
+            line-height: 1.5;
+        }
+        
+        .question b {
+            color: var(--accent);
+            font-weight: 600;
+            padding: 1px 3px;
+            background-color: rgba(103, 58, 183, 0.1);
+            border-radius: 3px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option-btn {
+            padding: 12px 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background-color: white;
+            color: var(--dark);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .option-btn:hover, .option-btn:focus {
+            background-color: #f8f9fa;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .option-btn:disabled {
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .option-btn.correct {
+            background-color: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        .option-btn.incorrect {
+            background-color: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+        
+        .option-synonym {
+            font-size: 0.8rem;
+            color: var(--gray);
+            font-style: italic;
+            margin-top: 4px;
+            display: none;
+            line-height: 1.4;
+        }
+        
+        .option-btn:disabled .option-synonym {
+            display: block;
+        }
+        
+        .feedback {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .correct-feedback {
+            background-color: rgba(52, 168, 83, 0.1);
+            border-left: 3px solid var(--success);
+        }
+        
+        .incorrect-feedback {
+            background-color: rgba(234, 67, 53, 0.1);
+            border-left: 3px solid var(--danger);
+        }
+        
+        .feedback-item {
+            margin-bottom: 8px;
+        }
+        
+        .next-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto 0;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            width: 100%;
+            max-width: 200px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .next-btn:hover, .next-btn:focus {
+            background-color: #3367d6;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            background-color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.03);
+        }
+        
+        .score {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .words-learned {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 15px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+        
+        .words-learned h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            position: relative;
+            padding-bottom: 8px;
+        }
+        
+        .words-learned h2::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+        
+        .word-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .word-card {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.2s ease;
+            background-color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .word-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background-color: var(--accent);
+        }
+        
+        .word-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .word {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+        
+        .synonyms {
+            margin: 12px 0;
+        }
+        
+        .synonym-type {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .synonym-type::before {
+            content: "•";
+            margin-right: 6px;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+        
+        .synonym-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .synonym-tag {
+            background-color: rgba(66, 133, 244, 0.1);
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .easy-tag {
+            background-color: rgba(52, 168, 83, 0.1);
+            color: var(--success);
+        }
+        
+        .example {
+            color: var(--gray);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Touch optimizations */
+        @media (hover: none) {
+            .option-btn:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            
+            .option-synonym {
+                font-size: 0.75rem;
+            }
+            
+            .next-btn {
+                padding: 14px 24px;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Vocabulary Quiz</h1>
+        <p>Test and improve your vocabulary knowledge</p>
+    </header>
+    
+    <div class="stats">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div>Progress: <span id="progress">0</span>/<span id="total">0</span></div>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    
+    <div class="quiz-container">
+        <div class="question-container">
+            <div class="question" id="question"></div>
+        </div>
+        
+        <div class="options" id="options"></div>
+        
+        <div class="feedback hidden" id="feedback">
+            <div class="feedback-item" id="feedbackText"></div>
+        </div>
+        
+        <button class="next-btn hidden" id="nextBtn">Next Question</button>
+    </div>
+    
+    <div class="words-learned hidden" id="wordsLearned">
+        <h2>Words You've Mastered</h2>
+        <div class="word-list" id="wordList"></div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                word: "abandon",
+                synonyms: ["desert", "forsake", "relinquish"],
+                easySynonyms: ["leave", "give up", "quit"],
+                question: "Which word means the same as <b>abandon</b> in this sentence?",
+                context: "They had to <b>abandon</b> their home due to the flood.",
+                example: "The sailors were forced to <b>abandon</b> the sinking ship.",
+                options: ["leave", "clean", "build", "visit"],
+                optionSynonyms: {
+                    "clean": "tidy",
+                    "build": "construct",
+                    "visit": "see"
+                }
+            },
+            {
+                word: "increase",
+                synonyms: ["augment", "amplify", "escalate"],
+                easySynonyms: ["go up", "grow", "rise"],
+                question: "Which word means the same as <b>increase</b> in this sentence?",
+                context: "The company plans to <b>increase</b> production next year.",
+                example: "Prices tend to <b>increase</b> during the holiday season.",
+                options: ["go up", "stop", "change", "hide"],
+                optionSynonyms: {
+                    "stop": "halt",
+                    "change": "alter",
+                    "hide": "conceal"
+                }
+            },
+            {
+                word: "abstain from",
+                synonyms: ["refrain from", "forbear", "eschew"],
+                easySynonyms: ["avoid", "stay away from", "skip"],
+                question: "Which phrase means the same as <b>abstain from</b> in this sentence?",
+                context: "He decided to <b>abstain from</b> voting in the election.",
+                example: "Doctors recommend <b>abstaining from</b> alcohol during pregnancy.",
+                options: ["avoid", "enjoy", "start", "remember"],
+                optionSynonyms: {
+                    "enjoy": "like",
+                    "start": "begin",
+                    "remember": "recall"
+                }
+            },
+            {
+                word: "acknowledge",
+                synonyms: ["recognize", "concede", "admit"],
+                easySynonyms: ["accept", "admit", "agree"],
+                question: "Which word means the same as <b>acknowledge</b> in this sentence?",
+                context: "She refused to <b>acknowledge</b> her mistake.",
+                example: "The president <b>acknowledged</b> the importance of the new law.",
+                options: ["accept", "forget", "ignore", "deny"],
+                optionSynonyms: {
+                    "forget": "not remember",
+                    "ignore": "disregard",
+                    "deny": "refuse"
+                }
+            },
+            {
+                word: "assist",
+                synonyms: ["aid", "support", "facilitate"],
+                easySynonyms: ["help", "back up", "lend a hand"],
+                question: "Which word means the same as <b>assist</b> in this sentence?",
+                context: "Can you <b>assist</b> me with this heavy box?",
+                example: "The teacher's aide <b>assists</b> students with special needs.",
+                options: ["help", "watch", "delay", "complain"],
+                optionSynonyms: {
+                    "watch": "look at",
+                    "delay": "postpone",
+                    "complain": "protest"
+                }
+            },
+            {
+                word: "attempt",
+                synonyms: ["endeavor", "strive", "undertake"],
+                easySynonyms: ["try", "aim", "seek"],
+                question: "Which word means the same as <b>attempt</b> in this sentence?",
+                context: "She made an <b>attempt</b> to solve the difficult puzzle.",
+                example: "The climbers will <b>attempt</b> to reach the summit tomorrow.",
+                options: ["try", "forget", "avoid", "finish"],
+                optionSynonyms: {
+                    "forget": "not remember",
+                    "avoid": "stay away from",
+                    "finish": "complete"
+                }
+            },
+            {
+                word: "brief",
+                synonyms: ["concise", "succinct", "terse"],
+                easySynonyms: ["short", "quick", "abbreviated"],
+                question: "Which word means the same as <b>brief</b> in this sentence?",
+                context: "The manager gave a <b>brief</b> explanation of the new policy.",
+                example: "Please keep your answers <b>brief</b> and to the point.",
+                options: ["short", "long", "complicated", "boring"],
+                optionSynonyms: {
+                    "long": "lengthy",
+                    "complicated": "complex",
+                    "boring": "dull"
+                }
+            },
+            {
+                word: "cancel",
+                synonyms: ["annul", "revoke", "invalidate"],
+                easySynonyms: ["stop", "call off", "end"],
+                question: "Which word means the same as <b>cancel</b> in this sentence?",
+                context: "They had to <b>cancel</b> the meeting due to bad weather.",
+                example: "The airline <b>canceled</b> all flights during the storm.",
+                options: ["stop", "start", "continue", "delay"],
+                optionSynonyms: {
+                    "start": "begin",
+                    "continue": "keep going",
+                    "delay": "postpone"
+                }
+            },
+            {
+                word: "choose",
+                synonyms: ["select", "pick", "elect"],
+                easySynonyms: ["pick", "decide on", "go for"],
+                question: "Which word means the same as <b>choose</b> in this sentence?",
+                context: "You can <b>choose</b> any color you like for your new car.",
+                example: "It's hard to <b>choose</b> between these two excellent options.",
+                options: ["pick", "ignore", "lose", "forget"],
+                optionSynonyms: {
+                    "ignore": "disregard",
+                    "lose": "misplace",
+                    "forget": "not remember"
+                }
+            },
+            {
+                word: "complete",
+                synonyms: ["conclude", "finalize", "accomplish"],
+                easySynonyms: ["finish", "end", "wrap up"],
+                question: "Which word means the same as <b>complete</b> in this sentence?",
+                context: "Please <b>complete</b> this form by Friday.",
+                example: "The builders will <b>complete</b> the project next month.",
+                options: ["finish", "start", "lose", "break"],
+                optionSynonyms: {
+                    "start": "begin",
+                    "lose": "misplace",
+                    "break": "damage"
+                }
+            },
+            {
+                word: "confident",
+                synonyms: ["assured", "self-assured", "undoubting"],
+                easySynonyms: ["sure", "certain", "positive"],
+                question: "Which word means the same as <b>confident</b> in this sentence?",
+                context: "She felt <b>confident</b> about her performance in the interview.",
+                example: "The team was <b>confident</b> they would win the championship.",
+                options: ["sure", "worried", "angry", "tired"],
+                optionSynonyms: {
+                    "worried": "anxious",
+                    "angry": "mad",
+                    "tired": "sleepy"
+                }
+            },
+            {
+                word: "correct",
+                synonyms: ["accurate", "precise", "exact"],
+                easySynonyms: ["right", "true", "proper"],
+                question: "Which word means the same as <b>correct</b> in this sentence?",
+                context: "Make sure your answers are <b>correct</b> before submitting.",
+                example: "That's the <b>correct</b> way to hold a golf club.",
+                options: ["right", "wrong", "funny", "strange"],
+                optionSynonyms: {
+                    "wrong": "incorrect",
+                    "funny": "humorous",
+                    "strange": "weird"
+                }
+            },
+            {
+                word: "decide",
+                synonyms: ["determine", "resolve", "settle"],
+                easySynonyms: ["choose", "pick", "make up your mind"],
+                question: "Which word means the same as <b>decide</b> in this sentence?",
+                context: "We need to <b>decide</b> where to go for vacation.",
+                example: "The jury will <b>decide</b> the verdict tomorrow.",
+                options: ["choose", "forget", "worry", "sleep"],
+                optionSynonyms: {
+                    "forget": "not remember",
+                    "worry": "fret",
+                    "sleep": "rest"
+                }
+            },
+            {
+                word: "delay",
+                synonyms: ["postpone", "defer", "procrastinate"],
+                easySynonyms: ["hold off", "wait", "put off"],
+                question: "Which word means the same as <b>delay</b> in this sentence?",
+                context: "The flight was <b>delayed</b> by three hours.",
+                example: "Don't <b>delay</b> making this important decision.",
+                options: ["hold off", "hurry", "finish", "start"],
+                optionSynonyms: {
+                    "hurry": "rush",
+                    "finish": "complete",
+                    "start": "begin"
+                }
+            },
+            {
+                word: "depend on",
+                synonyms: ["rely on", "count on", "trust in"],
+                easySynonyms: ["rely on", "need", "trust"],
+                question: "Which phrase means the same as <b>depend on</b> in this sentence?",
+                context: "Children <b>depend on</b> their parents for support.",
+                example: "We can <b>depend on</b> Sarah to get the job done.",
+                options: ["rely on", "ignore", "forget", "help"],
+                optionSynonyms: {
+                    "ignore": "disregard",
+                    "forget": "not remember",
+                    "help": "assist"
+                }
+            },
+            {
+                word: "discover",
+                synonyms: ["uncover", "find out", "ascertain"],
+                easySynonyms: ["find", "learn", "realize"],
+                question: "Which word means the same as <b>discover</b> in this sentence?",
+                context: "Scientists <b>discovered</b> a new species of butterfly.",
+                example: "I was surprised to <b>discover</b> that we had met before.",
+                options: ["find", "lose", "hide", "forget"],
+                optionSynonyms: {
+                    "lose": "misplace",
+                    "hide": "conceal",
+                    "forget": "not remember"
+                }
+            },
+            {
+                word: "divide",
+                synonyms: ["separate", "split", "partition"],
+                easySynonyms: ["split", "share", "break up"],
+                question: "Which word means the same as <b>divide</b> in this sentence?",
+                context: "The teacher asked us to <b>divide</b> into small groups.",
+                example: "<b>Divide</b> the pizza into eight equal slices.",
+                options: ["split", "add", "lose", "hide"],
+                optionSynonyms: {
+                    "add": "increase",
+                    "lose": "misplace",
+                    "hide": "conceal"
+                }
+            },
+            {
+                word: "explain",
+                synonyms: ["clarify", "elucidate", "interpret"],
+                easySynonyms: ["show", "tell", "make clear"],
+                question: "Which word means the same as <b>explain</b> in this sentence?",
+                context: "Can you <b>explain</b> how this machine works?",
+                example: "The manual <b>explains</b> the assembly process step by step.",
+                options: ["show", "hide", "break", "lose"],
+                optionSynonyms: {
+                    "hide": "conceal",
+                    "break": "damage",
+                    "lose": "misplace"
+                }
+            },
+            {
+                word: "improve",
+                synonyms: ["enhance", "ameliorate", "upgrade"],
+                easySynonyms: ["get better", "make better", "progress"],
+                question: "Which phrase means the same as <b>improve</b> in this sentence?",
+                context: "Practice will help you <b>improve</b> your skills.",
+                example: "The weather should <b>improve</b> by the weekend.",
+                options: ["get better", "get worse", "stay same", "give up"],
+                optionSynonyms: {
+                    "get worse": "deteriorate",
+                    "stay same": "not change",
+                    "give up": "quit"
+                }
+            },
+            {
+                word: "include",
+                synonyms: ["incorporate", "contain", "comprise"],
+                easySynonyms: ["has", "add", "count"],
+                question: "Which word means the same as <b>include</b> in this sentence?",
+                context: "My bag <b>includes</b> a book and a pen.",
+                example: "<b>has:</b> The price <b>includes</b> breakfast and dinner.<br><b>add:</b> Please <b>include</b> your name on the paper.",
+                options: ["add", "remove", "lose", "hide"],
+                optionSynonyms: {
+                    "remove": "take away",
+                    "lose": "misplace",
+                    "hide": "conceal"
+                }
+            },
+            {
+                word: "reveal",
+                synonyms: ["disclose", "uncover", "unveil"],
+                easySynonyms: ["show", "tell", "share"],
+                question: "Which word means the same as <b>reveal</b> in this sentence?",
+                context: "She will <b>reveal</b> the secret tomorrow.",
+                example: "The magician <b>revealed</b> the trick at the end of the show.",
+                options: ["show", "hide", "forget", "change"],
+                optionSynonyms: {
+                    "hide": "conceal",
+                    "forget": "not remember",
+                    "change": "alter"
+                }
+            },
+            {
+                word: "noble",
+                synonyms: ["honorable", "virtuous", "principled"],
+                easySynonyms: ["good-hearted", "brave", "selfless"],
+                question: "Which word means the same as <b>noble</b> in this sentence?",
+                context: "He made a <b>noble</b> sacrifice for his country.",
+                example: "The king was known for his <b>noble</b> character.",
+                options: ["selfless", "selfish", "scared", "angry"],
+                optionSynonyms: {
+                    "selfish": "only caring for oneself",
+                    "scared": "afraid",
+                    "angry": "mad"
+                }
+            },
+            {
+                word: "convenient",
+                synonyms: ["handy", "practical", "accessible"],
+                easySynonyms: ["easy to use", "helpful", "nearby"],
+                question: "Which word means the same as <b>convenient</b> in this sentence?",
+                context: "The store is in a <b>convenient</b> location.",
+                example: "It's <b>convenient</b> to have a grocery store nearby.",
+                options: ["helpful", "difficult", "far", "small"],
+                optionSynonyms: {
+                    "difficult": "hard",
+                    "far": "distant",
+                    "small": "little"
+                }
+            },
+            {
+                word: "attain",
+                synonyms: ["achieve", "accomplish", "obtain"],
+                easySynonyms: ["get", "earn", "succeed in"],
+                question: "Which word means the same as <b>attain</b> in this sentence?",
+                context: "She worked hard to <b>attain</b> her goals.",
+                example: "He finally <b>attained</b> success after years of effort.",
+                options: ["reach", "lose", "fail", "ignore"],
+                optionSynonyms: {
+                    "lose": "not keep",
+                    "fail": "not succeed",
+                    "ignore": "not notice"
+                }
+            },
+            {
+                word: "confidence",
+                synonyms: ["self-assurance", "certainty", "poise"],
+                easySynonyms: ["belief in oneself", "trust", "courage"],
+                question: "Which word means the same as <b>confidence</b> in this sentence?",
+                context: "She spoke with great <b>confidence</b> during the presentation.",
+                example: "His <b>confidence</b> helped him win the competition.",
+                options: ["belief in oneself", "fear", "doubt", "shyness"],
+                optionSynonyms: {
+                    "fear": "being afraid",
+                    "doubt": "uncertainty",
+                    "shyness": "timidity"
+                }
+            }
+        ];
+        
+        // Shuffle array function
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        // DOM elements
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const feedbackEl = document.getElementById('feedback');
+        const feedbackTextEl = document.getElementById('feedbackText');
+        const nextBtn = document.getElementById('nextBtn');
+        const scoreEl = document.getElementById('score');
+        const progressEl = document.getElementById('progress');
+        const totalEl = document.getElementById('total');
+        const progressBarEl = document.getElementById('progressBar');
+        const wordsLearnedEl = document.getElementById('wordsLearned');
+        const wordListEl = document.getElementById('wordList');
+        
+        // Quiz state
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = [];
+        let masteredWords = [];
+        let originalTotal = 0;
+        
+        // Initialize quiz
+        function initQuiz() {
+            questions = shuffleArray([...quizData]);
+            originalTotal = questions.length;
+            totalEl.textContent = originalTotal;
+            showQuestion();
+        }
+        
+        // Show current question
+        function showQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            questionEl.innerHTML = `${currentQuestion.question}<br><br><span style="font-weight:normal">${currentQuestion.context}</span>`;
+            
+            // Shuffle options and include the correct answer if not already there
+            let options = [...currentQuestion.options];
+            if (!options.includes(currentQuestion.easySynonyms[0])) {
+                options[0] = currentQuestion.easySynonyms[0];
+            }
+            options = shuffleArray(options);
+            
+            // Clear previous options
+            optionsEl.innerHTML = '';
+            
+            // Create new option buttons
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.classList.add('option-btn', 'fade-in');
+                
+                const optionText = document.createElement('div');
+                optionText.textContent = option;
+                
+                const synonymSpan = document.createElement('div');
+                synonymSpan.classList.add('option-synonym');
+                if (currentQuestion.optionSynonyms && currentQuestion.optionSynonyms[option]) {
+                    synonymSpan.textContent = `(${currentQuestion.optionSynonyms[option]})`;
+                }
+                
+                button.appendChild(optionText);
+                button.appendChild(synonymSpan);
+                button.addEventListener('click', () => selectAnswer(option));
+                optionsEl.appendChild(button);
+            });
+            
+            // Reset UI for new question
+            feedbackEl.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            progressEl.textContent = Math.min(currentQuestionIndex, originalTotal);
+            progressBarEl.style.width = `${(Math.min(currentQuestionIndex, originalTotal) / originalTotal) * 100}%`;
+        }
+        
+        // Handle answer selection
+        function selectAnswer(selectedOption) {
+            const currentQuestion = questions[currentQuestionIndex];
+            const optionButtons = document.querySelectorAll('.option-btn');
+            
+            // Disable all buttons
+            optionButtons.forEach(button => {
+                button.disabled = true;
+                
+                // Mark correct answer
+                if (button.firstChild.textContent === currentQuestion.easySynonyms[0]) {
+                    button.classList.add('correct');
+                }
+                
+                // Mark incorrect selected answer
+                if (button.firstChild.textContent === selectedOption && button.firstChild.textContent !== currentQuestion.easySynonyms[0]) {
+                    button.classList.add('incorrect');
+                }
+            });
+            
+            // Check if answer is correct
+            const isCorrect = selectedOption === currentQuestion.easySynonyms[0];
+            
+            // Update score if correct
+            if (isCorrect) {
+                score++;
+                scoreEl.textContent = score;
+                
+                // Add to mastered words if not already there
+                if (!masteredWords.some(w => w.word === currentQuestion.word)) {
+                    masteredWords.push(currentQuestion);
+                }
+            } else {
+                // Add question back to the end of the array if answered wrong
+                questions.push(currentQuestion);
+            }
+            
+            // Show feedback
+            feedbackEl.classList.remove('hidden');
+            feedbackEl.classList.remove('correct-feedback', 'incorrect-feedback');
+            
+            if (isCorrect) {
+                feedbackEl.classList.add('correct-feedback');
+                // Show 1-2 synonyms for correct answer
+                const synonymsToShow = currentQuestion.easySynonyms.slice(1, 3).filter(s => s !== selectedOption);
+                const synonymsText = synonymsToShow.length > 0 
+                    ? ` (${synonymsToShow.join(', ')})` 
+                    : '';
+                feedbackTextEl.innerHTML = `✅ Correct! <b>${currentQuestion.word}</b> means <b>${selectedOption}</b>${synonymsText}.<br><br>Example: ${currentQuestion.example}`;
+            } else {
+                feedbackEl.classList.add('incorrect-feedback');
+                feedbackTextEl.innerHTML = `❌ Incorrect. You chose <b>${selectedOption}</b> (${currentQuestion.optionSynonyms[selectedOption] || selectedOption}). The correct answer is <b>${currentQuestion.easySynonyms[0]}</b> (${currentQuestion.easySynonyms[1] || currentQuestion.easySynonyms[0]}).<br><br>Example: ${currentQuestion.example}`;
+            }
+            
+            // Show next button
+            nextBtn.classList.remove('hidden');
+        }
+        
+        // Move to next question
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                endQuiz();
+            }
+        }
+        
+        // End quiz and show mastered words
+        function endQuiz() {
+            document.querySelector('.quiz-container').classList.add('hidden');
+            wordsLearnedEl.classList.remove('hidden');
+            
+            // Display mastered words
+            wordListEl.innerHTML = '';
+            masteredWords.forEach(word => {
+                const wordCard = document.createElement('div');
+                wordCard.classList.add('word-card', 'fade-in');
+                wordCard.innerHTML = `
+                    <div class="word">${word.word}</div>
+                    
+                    <div class="synonyms">
+                        <div class="synonym-type">Academic synonyms:</div>
+                        <div class="synonym-list">
+                            ${word.synonyms.map(s => `<span class="synonym-tag">${s}</span>`).join('')}
+                        </div>
+                        
+                        <div class="synonym-type">Easy synonyms:</div>
+                        <div class="synonym-list">
+                            ${word.easySynonyms.map(s => `<span class="synonym-tag easy-tag">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="example">${word.example}</div>
+                `;
+                wordListEl.appendChild(wordCard);
+            });
+        }
+        
+        // Event listeners
+        nextBtn.addEventListener('click', nextQuestion);
+        
+        // Start the quiz
+        initQuiz();
+    </script>
+</body>
+</html>
