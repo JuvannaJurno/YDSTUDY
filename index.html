@@ -124,6 +124,32 @@
       transform: translateX(3px);
     }
     
+    .article-btn {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      position: relative;
+      overflow: hidden;
+      border-left: 4px solid #f1c40f;
+    }
+    
+    .article-btn::before {
+      content: 'NEW';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #f1c40f;
+      color: #2c3e50;
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 10px;
+      transform: rotate(15deg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .article-btn:hover {
+      background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%);
+    }
+    
     .coming-soon {
       background: linear-gradient(135deg, #e5e5e5 0%, #d5d5d5 100%);
       color: #888;
@@ -151,7 +177,7 @@
       border: none;
       border-radius: 20px;
       font-weight: 600;
-      cursor: not-allowed;
+      cursor: pointer;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       transition: all 0.3s ease;
       z-index: 100;
@@ -160,6 +186,7 @@
     .feature-btn:hover {
       background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
       box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+      transform: translateY(-3px);
     }
     
     footer {
@@ -211,16 +238,16 @@
     <button class="quiz-btn" onclick="window.location.href='Q2S.html'">
       Vocabulary Starter Pack 2 <span>▶</span>
     </button>
-    <button class="quiz-btn coming-soon">
-     Vocabulary Starter Pack 3 <span>🔒</span>
+    <button class="quiz-btn article-btn" onclick="window.location.href='r1.html'">
+      Read Article <span>📖</span>
     </button>
     <button class="quiz-btn coming-soon">
       Coming Soon <span>🔒</span>
     </button>
   </div>
   
-  <button class="feature-btn">
-    EssayScroll Feature 🔒
+  <button class="feature-btn" onclick="window.location.href='EssayScroll.html'">
+    EssayScroll Feature
   </button>
   
   <footer>
