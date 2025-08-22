@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay Scroll</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fafafa;
+            --text-color: #333;
+            --card-bg: #fff;
+            --accent-color: #4361ee;
+            --secondary-color: #666;
+            --border-color: #eee;
+        }
+
+        .dark-mode {
+            --bg-color: #121212;
+            --text-color: #f0f0f0;
+            --card-bg: #1e1e1e;
+            --accent-color: #4895ef;
+            --secondary-color: #aaa;
+            --border-color: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.7;
+        }
+
+        .container {
+            height: 100vh;
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .essay-card {
+            height: 100vh;
+            scroll-snap-align: start;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card-bg);
+            position: relative;
+        }
+
+        .header-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .essay-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--text-color);
+        }
+
+        .essay-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .essay-content p {
+            margin-bottom: 1.2em;
+        }
+
+        .controls-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .level-selector {
+            display: flex;
+            gap: 8px;
+            background: rgba(67, 97, 238, 0.08);
+            padding: 6px;
+            border-radius: 8px;
+            width: fit-content;
+        }
+
+        .level-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--accent-color);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .level-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .word-tooltip {
+            position: fixed;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            max-width: 300px;
+            display: none;
+        }
+
+        .word-tooltip h4 {
+            margin-bottom: 12px;
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .word-description {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: var(--secondary-color);
+        }
+
+        .tooltip-section {
+            margin-bottom: 12px;
+        }
+
+        .tooltip-section h5 {
+            margin-bottom: 6px;
+            color: var(--accent-color);
+            font-size: 0.95rem;
+        }
+
+        .tooltip-list {
+            list-style: none;
+            font-size: 0.9rem;
+        }
+
+        .tooltip-list li {
+            margin-bottom: 4px;
+            padding-left: 12px;
+            position: relative;
+        }
+
+        .tooltip-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .highlight {
+            border-bottom: 1px dashed rgba(67, 97, 238, 0.5);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .highlight:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        .footer {
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+            text-align: center;
+            padding: 12px;
+        }
+
+        /* New styles for full essay view */
+        .read-full-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .full-essay-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--card-bg);
+            z-index: 200;
+            padding: 20px;
+            overflow-y: auto;
+            transform: translateY(100vh);
+            transition: transform 0.4s ease-out;
+            will-change: transform;
+        }
+
+        .full-essay-view.active {
+            transform: translateY(0);
+        }
+
+        .full-essay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .full-essay-title {
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .full-essay-content {
+            font-size: 1.2rem;
+            line-height: 1.9;
+        }
+
+        .full-essay-content p {
+            margin-bottom: 1.5em;
+        }
+
+        @media (max-width: 768px) {
+            .header-image {
+                height: 160px;
+            }
+            
+            .essay-title {
+                font-size: 1.3rem;
+            }
+            
+            .essay-content {
+                font-size: 1rem;
+            }
+            
+            .word-tooltip {
+                max-width: 280px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">☀️</button>
+    
+    <div class="container" id="essayContainer">
+        <!-- Essays will be loaded here -->
+    </div>
+
+    <div class="word-tooltip" id="wordTooltip">
+        <h4 id="tooltipWord">Word</h4>
+        <div class="word-description" id="wordDescription"></div>
+        <div class="tooltip-section">
+            <h5>Academic Synonyms</h5>
+            <ul class="tooltip-list" id="academicSynonyms"></ul>
+        </div>
+        <div class="tooltip-section">
+            <h5>Simple Synonyms</h5>
+            <ul class="tooltip-list" id="simpleSynonyms"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Track tooltip state
+        let currentTooltipWord = null;
+        let currentTooltipElement = null;
+
+        // Sample essays with 3 levels
+        const essays = [
+{
+    id: 3,
+    title: "3D-Printed Guns: A Growing Concern",
+    image: "https://news-in-levels-1252061619.cos.ap-guangzhou.myqcloud.com/covers/1750336623270-ea26bdf0-4b80-11f0-86d5-3b52b53af158.png.webp/L",
+    levels: {
+      level1: "<p>3D-printed guns are becoming a big problem. These are guns that people can make at home using special printers. They are hard to find because they don't have normal gun parts.</p><p>People are worried because anyone can make these guns. They don't need to buy them from stores. This makes it easier for bad people to get guns.</p><p>The police are trying to stop these guns from spreading. But it's hard because people share how to make them online. Some countries want to make it against the law to have plans for these guns.</p>",
+      level2: "<p>3D-printed guns, often called \"ghost guns,\" are becoming a growing concern worldwide. These firearms can be made using 3D printers, downloadable blueprints, and basic materials, making them difficult to trace.</p><p>Experts worry that these guns could become popular among criminals and extremists. The technology has improved rapidly, with newer models capable of firing multiple shots without breaking.</p><p>Social media platforms like Instagram and Facebook have been used to advertise these guns, despite policies against it. Some sellers claim they can ship weapons globally, raising concerns about illegal gun trafficking.</p><p>While some see 3D-printed guns as a way to exercise their right to bear arms, others are calling for stricter regulations to prevent their spread. Some countries are considering laws to make possessing blueprints for these guns illegal.</p>",
+      level3: "<p>The rapid proliferation of 3D-printed firearms, colloquially known as \"ghost guns,\" is emerging as a significant global security challenge. These untraceable weapons, which can be manufactured using 3D printers, downloadable blueprints, and rudimentary materials, are designed to circumvent traditional gun control measures.</p><p>Experts in the field, such as Nick Suplina of Everytown, a US-based gun control organization, warn that 3D-printed guns could become the \"weapon of choice\" for individuals planning violent acts. The technology has advanced considerably, with recent models capable of discharging multiple rounds without structural failure of their plastic components.</p><p>An investigation by BBC Trending revealed the pervasive nature of this issue across various social media platforms, including Instagram, Facebook, and Telegram. Despite policies prohibiting such content, advertisements for 3D-printed guns and related components were found to be active on these platforms.</p><p>While proponents argue that access to 3D-printed gun blueprints falls under the right to free speech and the right to bear arms, critics emphasize the potential for misuse and the challenges these weapons pose to law enforcement. The global community is grappling with how to address this issue, with some nations considering legislation to criminalize the possession of 3D-printed gun blueprints.</p>",
+      full: {
+        level1: "<p>3D-printed guns are becoming a big problem. These are guns that people can make at home using special printers. They are hard to find because they don't have normal gun parts.</p><p>People are worried because anyone can make these guns. They don't need to buy them from stores. This makes it easier for bad people to get guns.</p><p>The police are trying to stop these guns from spreading. But it's hard because people share how to make them online. Some countries want to make it against the law to have plans for these guns.</p>",
+        level2: "<p>3D-printed guns, often called \"ghost guns,\" are becoming a growing concern worldwide. These firearms can be made using 3D printers, downloadable blueprints, and basic materials, making them difficult to trace.</p><p>Experts worry that these guns could become popular among criminals and extremists. The technology has improved rapidly, with newer models capable of firing multiple shots without breaking.</p><p>Social media platforms like Instagram and Facebook have been used to advertise these guns, despite policies against it. Some sellers claim they can ship weapons globally, raising concerns about illegal gun trafficking.</p><p>While some see 3D-printed guns as a way to exercise their right to bear arms, others are calling for stricter regulations to prevent their spread. Some countries are considering laws to make possessing blueprints for these guns illegal.</p>",
+        level3: "<p>The rapid proliferation of 3D-printed firearms, colloquially known as \"ghost guns,\" is emerging as a significant global security challenge. These untraceable weapons, which can be manufactured using 3D printers, downloadable blueprints, and rudimentary materials, are designed to circumvent traditional gun control measures.</p><p>Experts in the field, such as Nick Suplina of Everytown, a US-based gun control organization, warn that 3D-printed guns could become the \"weapon of choice\" for individuals planning violent acts. The technology has advanced considerably, with recent models capable of discharging multiple rounds without structural failure of their plastic components.</p><p>An investigation by BBC Trending revealed the pervasive nature of this issue across various social media platforms, including Instagram, Facebook, and Telegram. Despite policies prohibiting such content, advertisements for 3D-printed guns and related components were found to be active on these platforms.</p><p>While proponents argue that access to 3D-printed gun blueprints falls under the right to free speech and the right to bear arms, critics emphasize the potential for misuse and the challenges these weapons pose to law enforcement. The global community is grappling with how to address this issue, with some nations considering legislation to criminalize the possession of 3D-printed gun blueprints.</p>"
+      }
+    },
+    keywords: [""]
+  },
+  {
+    id: 2,
+    title: "Japan's Population Decline Worsens",
+    image: "https://news-in-levels-1252061619.cos.ap-guangzhou.myqcloud.com/covers/1754668070177-ap20107165079345.avif/L",
+    levels: {
+      level1: "<p>Japan has a big problem. The number of people living there is getting smaller. Last year, Japan lost more than 900,000 people. Now, there are only 120 million people in Japan.</p><p>Why is this happening? Not many babies are being born. Also, many old people are dying. The government is trying to help. They give money to families with children. They want more people to have babies.</p><p>But it's not easy to fix. Japan needs more young people to work and have families. Right now, there are too many old people and not enough young ones. This makes it hard for the country to grow and be strong.</p>",
+      level2: "<p>Japan is experiencing a significant population crisis. In 2024, the country's population decreased by more than 900,000 people, bringing the total down to 120 million. This marks the largest annual drop on record and continues a 16-year trend of population decline.</p><p>The main factors contributing to this issue are a low birth rate and an aging population. Last year, Japan recorded its lowest number of births since 1968, while deaths reached an all-time high. The government has implemented various measures to address this problem, such as offering financial support for families and encouraging better work-life balance.</p><p>However, the situation remains challenging. With fewer young people of working age and a growing elderly population, Japan faces difficulties in maintaining its social systems and economic growth. Some experts suggest that increasing immigration could help, but this remains a controversial topic in Japanese society.</p>",
+      level3: "<p>Japan's demographic crisis has reached a new milestone, with the country experiencing its largest annual population decline on record. In 2024, Japan's population decreased by more than 900,000 people, bringing the total to 120 million. This marks the 16th consecutive year of population decline since peaking at 126.6 million in 2009.</p><p>The root causes of this demographic shift are multifaceted. Japan's birth rate has plummeted to its lowest level since records began in 1968, while death rates have simultaneously reached an all-time high. This imbalance is exacerbated by various socioeconomic factors, including a stagnant economy, high cost of living, and deeply ingrained gender norms that often discourage women from both pursuing careers and starting families.</p><p>The repercussions of this population decline are far-reaching. With nearly 30% of the population now elderly and only 59% of working age (compared to the global average of 65%), Japan faces significant challenges in maintaining its social welfare systems, including pensions and healthcare. The government has implemented numerous initiatives to combat this trend, such as offering childbirth subsidies and promoting paternity leave, but the effectiveness of these measures remains to be seen.</p><p>Some experts propose increased immigration as a potential solution to offset the population decline. However, this remains a contentious issue in Japan, a country that has traditionally been resistant to large-scale immigration. Despite this, recent data shows a 10% increase in foreign residents, suggesting a gradual shift in policy and societal attitudes.</p>",
+      full: {
+        level1: "<p>Japan has a big problem. The number of people living there is getting smaller. Last year, Japan lost more than 900,000 people. Now, there are only 120 million people in Japan.</p><p>Why is this happening? Not many babies are being born. Also, many old people are dying. The government is trying to help. They give money to families with children. They want more people to have babies.</p><p>But it's not easy to fix. Japan needs more young people to work and have families. Right now, there are too many old people and not enough young ones. This makes it hard for the country to grow and be strong.</p>",
+        level2: "<p>Japan is experiencing a significant population crisis. In 2024, the country's population decreased by more than 900,000 people, bringing the total down to 120 million. This marks the largest annual drop on record and continues a 16-year trend of population decline.</p><p>The main factors contributing to this issue are a low birth rate and an aging population. Last year, Japan recorded its lowest number of births since 1968, while deaths reached an all-time high. The government has implemented various measures to address this problem, such as offering financial support for families and encouraging better work-life balance.</p><p>However, the situation remains challenging. With fewer young people of working age and a growing elderly population, Japan faces difficulties in maintaining its social systems and economic growth. Some experts suggest that increasing immigration could help, but this remains a controversial topic in Japanese society.</p>",
+        level3: "<p>Japan's demographic crisis has reached a new milestone, with the country experiencing its largest annual population decline on record. In 2024, Japan's population decreased by more than 900,000 people, bringing the total to 120 million. This marks the 16th consecutive year of population decline since peaking at 126.6 million in 2009.</p><p>The root causes of this demographic shift are multifaceted. Japan's birth rate has plummeted to its lowest level since records began in 1968, while death rates have simultaneously reached an all-time high. This imbalance is exacerbated by various socioeconomic factors, including a stagnant economy, high cost of living, and deeply ingrained gender norms that often discourage women from both pursuing careers and starting families.</p><p>The repercussions of this population decline are far-reaching. With nearly 30% of the population now elderly and only 59% of working age (compared to the global average of 65%), Japan faces significant challenges in maintaining its social welfare systems, including pensions and healthcare. The government has implemented numerous initiatives to combat this trend, such as offering childbirth subsidies and promoting paternity leave, but the effectiveness of these measures remains to be seen.</p><p>Some experts propose increased immigration as a potential solution to offset the population decline. However, this remains a contentious issue in Japan, a country that has traditionally been resistant to large-scale immigration. Despite this, recent data shows a 10% increase in foreign residents, suggesting a gradual shift in policy and societal attitudes.</p>"
+      }
+    },
+    keywords: [""]
+  },
+  {
+    id: 1,
+    title: "Pretend Work: A New Trend in China",
+    image: "https://news-in-levels-1252061619.cos.ap-guangzhou.myqcloud.com/covers/1754928229129-3a41d130-72be-11f0-afda-bb39e9f348ef.jpg.webp/L",
+    levels: {
+      level1: "<p>In China, some young people without jobs are doing something unusual. They pay money to go to fake offices and pretend to work.</p><p>These fake offices look like real ones. They have computers, meeting rooms, and places to make tea. People can use the computers to look for real jobs, study new skills, or even start their own small businesses. Some people also use the offices to read, write, or work on personal projects.</p><p>One man named Shui Zhou goes to a fake office every day. He pays about $4 to be there. He says it makes him happy to be with other people who are doing the same thing. For him, it feels better than staying at home alone.</p><p>This trend is becoming more popular because it is hard for young people to find jobs in China right now. Many graduates cannot get work, and competition is very high. Some people think pretending to work helps them stay positive and gives them a daily routine. Others believe it is a way to prepare for the future when they find a real job.</p>",
+      level2: "<p>A new trend is emerging among unemployed young adults in China - paying to pretend to work in mock offices. This unusual phenomenon has gained popularity as China faces economic challenges and high youth unemployment rates.</p><p>These 'pretend work' companies provide office-like environments complete with computers, internet access, meeting rooms, and tea areas. For a daily fee of about $4-$7, attendees can use the space to job hunt, work on personal projects, or simply socialize with others in similar situations.</p><p>Shui Zhou, a 30-year-old whose food business failed, has been attending one such office in Dongguan for over three months. He finds the environment helps improve his self-discipline and provides a sense of community. Zhou often stays late, sometimes until 11 pm, and enjoys the team-building aspect of the experience.</p><p>Experts suggest this trend reflects the frustration and powerlessness felt by young job seekers in a tough market. It offers them a way to maintain a sense of dignity and purpose while navigating unemployment. Some attendees even use these spaces to fulfill university requirements or appease concerned parents.</p>",
+      level3: "<p>In response to China's sluggish economy and persistently high youth unemployment rate, a novel trend has emerged among young, jobless adults: paying to pretend to work in simulated office environments. This phenomenon, now widespread across major Chinese cities, reflects the dire state of the job market and the psychological toll of unemployment on the country's youth.</p><p>These 'pretend work' companies offer fully-equipped office spaces, complete with computers, internet access, meeting rooms, and communal areas. For a daily fee ranging from 30 to 50 yuan ($4.20 to $7), attendees can utilize these facilities to job hunt, develop entrepreneurial projects, or simply maintain a semblance of a work routine.</p><p>Shui Zhou, a 30-year-old former entrepreneur, exemplifies this trend. Following the failure of his food business in 2024, Zhou began attending a mock office in Dongguan. He cites improved self-discipline and a sense of camaraderie as key benefits of this arrangement. Zhou's experience is not unique; many attendees report enhanced motivation and reduced feelings of isolation.</p><p>Experts like Dr. Christian Yao from Victoria University of Wellington view these 'pretend work' spaces as transitional solutions in a rapidly transforming economy. They provide a buffer for young adults grappling with the mismatch between their education and the current job market demands.</p><p>However, this trend also raises questions about the long-term implications for China's workforce and the sustainability of such coping mechanisms in addressing systemic economic challenges.</p>",
+      full: {
+        level1: "<p>In China, some young people without jobs are doing something unusual. They pay money to go to fake offices and pretend to work.</p><p>These fake offices look like real ones. They have computers, meeting rooms, and places to make tea. People can use the computers to look for real jobs, study new skills, or even start their own small businesses. Some people also use the offices to read, write, or work on personal projects.</p><p>One man named Shui Zhou goes to a fake office every day. He pays about $4 to be there. He says it makes him happy to be with other people who are doing the same thing. For him, it feels better than staying at home alone.</p><p>This trend is becoming more popular because it is hard for young people to find jobs in China right now. Many graduates cannot get work, and competition is very high. Some people think pretending to work helps them stay positive and gives them a daily routine. Others believe it is a way to prepare for the future when they find a real job.</p>",
+        level2: "<p>A new trend is emerging among unemployed young adults in China - paying to pretend to work in mock offices. This unusual phenomenon has gained popularity as China faces economic challenges and high youth unemployment rates.</p><p>These 'pretend work' companies provide office-like environments complete with computers, internet access, meeting rooms, and tea areas. For a daily fee of about $4-$7, attendees can use the space to job hunt, work on personal projects, or simply socialize with others in similar situations.</p><p>Shui Zhou, a 30-year-old whose food business failed, has been attending one such office in Dongguan for over three months. He finds the environment helps improve his self-discipline and provides a sense of community. Zhou often stays late, sometimes until 11 pm, and enjoys the team-building aspect of the experience.</p><p>Experts suggest this trend reflects the frustration and powerlessness felt by young job seekers in a tough market. It offers them a way to maintain a sense of dignity and purpose while navigating unemployment. Some attendees even use these spaces to fulfill university requirements or appease concerned parents.</p>",
+        level3: "<p>In response to China's sluggish economy and persistently high youth unemployment rate, a novel trend has emerged among young, jobless adults: paying to pretend to work in simulated office environments. This phenomenon, now widespread across major Chinese cities, reflects the dire state of the job market and the psychological toll of unemployment on the country's youth.</p><p>These 'pretend work' companies offer fully-equipped office spaces, complete with computers, internet access, meeting rooms, and communal areas. For a daily fee ranging from 30 to 50 yuan ($4.20 to $7), attendees can utilize these facilities to job hunt, develop entrepreneurial projects, or simply maintain a semblance of a work routine.</p><p>Shui Zhou, a 30-year-old former entrepreneur, exemplifies this trend. Following the failure of his food business in 2024, Zhou began attending a mock office in Dongguan. He cites improved self-discipline and a sense of camaraderie as key benefits of this arrangement. Zhou's experience is not unique; many attendees report enhanced motivation and reduced feelings of isolation.</p><p>Experts like Dr. Christian Yao from Victoria University of Wellington view these 'pretend work' spaces as transitional solutions in a rapidly transforming economy. They provide a buffer for young adults grappling with the mismatch between their education and the current job market demands.</p><p>However, this trend also raises questions about the long-term implications for China's workforce and the sustainability of such coping mechanisms in addressing systemic economic challenges.</p>"
+      }
+    },
+    keywords: [""]
+  }
+        ];
+
+        // Enhanced word database with descriptions and multiple forms
+        const wordData = {
+            
+    "demographic": {
+    description: "relating to population statistics",
+    academic: ["population-based", "statistical"],
+    simple: ["population", "people-related"]
+  },
+  "milestone": {
+    description: "significant event or stage",
+    academic: ["landmark", "turning point"],
+    simple: ["big moment", "important event"]
+  },
+  "consecutive": {
+    description: "following one after another without interruption",
+    academic: ["successive", "sequential"],
+    simple: ["in a row", "back-to-back"]
+  },
+  "multifaceted": {
+    description: "having many different aspects",
+    academic: ["complex", "multidimensional"],
+    simple: ["many-sided", "complicated"]
+  },
+  "plummeted": {
+    description: "fell or dropped suddenly and sharply",
+    academic: ["plunged", "precipitated"],
+    simple: ["dropped sharply", "fell quickly"]
+  },
+  "simultaneously": {
+    description: "at the same time",
+    academic: ["concurrently", "coincidentally"],
+    simple: ["at once", "together"]
+  },
+  "exacerbated": {
+    description: "made worse or more severe",
+    academic: ["aggravated", "intensified"],
+    simple: ["made worse", "worsened"]
+  },
+  "stagnant": {
+    description: "not growing or changing",
+    academic: ["static", "sluggish"],
+    simple: ["not moving", "still"]
+  },
+  "ingrained": {
+    description: "firmly fixed or established",
+    academic: ["entrenched", "deep-rooted"],
+    simple: ["deeply set", "firmly fixed"]
+  },
+  "repercussions": {
+    description: "unintended consequences or effects",
+    academic: ["ramifications", "aftereffects"],
+    simple: ["consequences", "results"]
+  },
+  "far-reaching": {
+    description: "having widespread effects or influence",
+    academic: ["extensive", "comprehensive"],
+    simple: ["wide impact", "broad effects"]
+  },
+  "implemented": {
+    description: "put into action or effect",
+    academic: ["enacted", "executed"],
+    simple: ["put in place", "started"]
+  },
+  "initiatives": {
+    description: "new plans or programs",
+    academic: ["programs", "measures"],
+    simple: ["plans", "projects"]
+  },
+  "subsidies": {
+    description: "financial support or assistance",
+    academic: ["grants", "allocations"],
+    simple: ["financial help", "support payments"]
+  },
+  "contentious": {
+    description: "causing disagreement or argument",
+    academic: ["controversial", "disputed"],
+    simple: ["debated", "argued about"]
+  },
+  "resistant": {
+    description: "opposed to or against something",
+    academic: ["opposed", "recalcitrant"],
+    simple: ["against", "unwilling"]
+  },
+    "proliferation": {
+    description: "rapid increase in numbers",
+    academic: ["multiplication", "expansion"],
+    simple: ["spread", "growth"]
+  },
+  "firearms": {
+    description: "weapons that shoot bullets",
+    academic: ["ordnance", "artillery"],
+    simple: ["guns", "weapons"]
+  },
+  "colloquially": {
+    description: "in informal language",
+    academic: ["vernacularly", "conversationally"],
+    simple: ["informally", "commonly"]
+  },
+  "untraceable": {
+    description: "cannot be tracked or found",
+    academic: ["un-trackable", "undetectable"],
+    simple: ["unfindable"]
+  },
+  "manufactured": {
+    description: "made in large quantities",
+    academic: ["fabricated", "produced"],
+    simple: ["made", "created"]
+  },
+    "sluggish": {
+    description: "slow-moving or inactive",
+    academic: ["stagnant", "lethargic"],
+    simple: ["slow", "slowing down"]
+  },
+  "persistently": {
+    description: "continuing steadily despite difficulties",
+    academic: ["continually", "unceasingly"],
+    simple: ["constantly", "non-stop"]
+  },
+  "novel": {
+    description: "new and different from anything before",
+    academic: ["innovative", "unprecedented"],
+    simple: ["new", "unusual"]
+  },
+  "phenomenon": {
+    description: "something that exists and can be seen or experienced",
+    academic: ["occurrence", "manifestation"],
+    simple: ["event", "happening"]
+  },
+  "widespread": {
+    description: "existing or happening over a large area",
+    academic: ["pervasive", "extensive"],
+    simple: ["common", "everywhere"]
+  },
+  "dire": {
+    description: "extremely serious or terrible",
+    academic: ["critical", "calamitous"],
+    simple: ["terrible", "awful"]
+  },
+  "utilize": {
+    description: "to make use of something",
+    academic: ["employ", "harness"],
+    simple: ["use", "make use of"]
+  },
+  "entrepreneurial": {
+    description: "related to starting businesses",
+    academic: ["innovative", "venturesome"],
+    simple: ["business-starting", "commercial"]
+  },
+  "semblance": {
+    description: "outward appearance of something",
+    academic: ["facade", "appearance"],
+    simple: ["appearance", "look"]
+  },
+  "exemplifies": {
+    description: "shows a typical example of something",
+    academic: ["typifies", "epitomizes"],
+    simple: ["shows", "demonstrates"]
+  },
+  "camaraderie": {
+    description: "friendship and trust among people",
+    academic: ["fellowship", "comradeship"],
+    simple: ["friendship", "togetherness"]
+  },
+  "isolation": {
+    description: "state of being alone or separated",
+    academic: ["seclusion", "solitude"],
+    simple: ["loneliness", "separation"]
+  },
+  "transitional": {
+    description: "relating to change from one state to another",
+    academic: ["interim", "provisional"],
+    simple: ["changing", "temporary"]
+  },
+  "grappling": {
+    description: "struggling to deal with something difficult",
+    academic: ["wrestling", "contending"],
+    simple: ["struggling", "dealing with"]
+  },
+  "mismatch": {
+    description: "lack of harmony or compatibility",
+    academic: ["discrepancy", "incongruity"],
+    simple: ["bad fit", "difference"]
+  },
+  "implications": {
+    description: "possible results or effects",
+    academic: ["consequences", "ramifications"],
+    simple: ["effects", "results"]
+  },
+  "significant": {
+    description: "important or noticeable",
+    academic: ["substantial", "considerable"],
+    simple: ["major", "big"]
+  },
+  "crisis": {
+    description: "a time of great difficulty or danger",
+    academic: ["emergency", "catastrophe"],
+    simple: ["disaster", "big problem"]
+  },
+  "factors": {
+    description: "things that contribute to a result",
+    academic: ["elements", "components"],
+    simple: ["reasons", "causes"]
+  },
+  "implemented": {
+    description: "put into action or effect",
+    academic: ["enacted", "executed"],
+    simple: ["started", "put in place"]
+  },
+  "measures": {
+    description: "actions taken to achieve a purpose",
+    academic: ["initiatives", "strategies"],
+    simple: ["steps", "actions"]
+  },
+  "challenging": {
+    description: "difficult in a way that tests your ability",
+    academic: ["demanding", "arduous"],
+    simple: ["hard", "difficult"]
+  },
+  "maintaining": {
+    description: "keeping something in good condition",
+    academic: ["preserving", "sustaining"],
+    simple: ["keeping up", "looking after"]
+  },
+  "controversial": {
+    description: "causing disagreement or discussion",
+    academic: ["contentious", "disputed"],
+    simple: ["debated", "argued about"]
+  },
+  "trend": {
+    description: "general direction of change",
+    academic: ["tendency", "trajectory"],
+    simple: ["pattern", "direction"]
+  },
+  "decline": {
+    description: "gradual decrease or weakening",
+    academic: ["deterioration", "diminution"],
+    simple: ["drop", "decrease"]
+  },
+  
+  "sustainability": {
+    description: "ability to be maintained over time",
+    academic: ["viability", "maintainability"],
+    simple: ["long-term use", "lasting ability"]
+  },
+  "systemic": {
+    description: "relating to a whole system rather than parts",
+    academic: ["structural", "fundamental"],
+    simple: ["whole-system", "built-in"]
+  },
+  "rudimentary": {
+    description: "basic and simple",
+    academic: ["elementary", "primitive"],
+    simple: ["basic", "simple"]
+  },
+  "circumvent": {
+    description: "find a way around something",
+    academic: ["evade", "bypass"],
+    simple: ["avoid", "get around"]
+  },
+  "considerably": {
+    description: "to a large degree",
+    academic: ["substantially", "significantly"],
+    simple: ["greatly", "a lot"]
+  },
+  "discharging": {
+    description: "firing or releasing",
+    academic: ["expelling", "emitting"],
+    simple: ["firing", "shooting"]
+  },
+  "structural": {
+    description: "related to physical form",
+    academic: ["architectural", "constructional"],
+    simple: ["physical", "build"]
+  },
+  "pervasive": {
+    description: "spread throughout everywhere",
+    academic: ["ubiquitous", "permeating"],
+    simple: ["widespread", "everywhere"]
+  },
+  "prohibiting": {
+    description: "officially forbidding",
+    academic: ["banning", "outlawing"],
+    simple: ["stopping", "preventing"]
+  },
+  "proponents": {
+    description: "people who support something",
+    academic: ["advocates", "champions"],
+    simple: ["supporters", "backers"]
+  },
+  "blueprints": {
+    description: "detailed plans for making something",
+    academic: ["schematics", "designs"],
+    simple: ["plans", "patterns"]
+  },
+  "misuse": {
+    description: "wrong or improper use",
+    academic: ["abuse", "exploitation"],
+    simple: ["wrong use", "abuse"]
+  },
+  "grappling": {
+    description: "struggling to deal with something",
+    academic: ["wrestling", "contending"],
+    simple: ["struggling", "dealing with"]
+  },
+  "proliferation": {
+    description: "rapid increase in numbers",
+    academic: ["multiplication", "expansion"],
+    simple: ["spread", "growth"]
+  },
+  "firearms": {
+    description: "weapons that shoot bullets",
+    academic: ["ordnance", "artillery"],
+    simple: ["guns", "weapons"]
+  },
+  "colloquially": {
+    description: "in informal language",
+    academic: ["vernacularly", "conversationally"],
+    simple: ["informally", "commonly"]
+  },
+  "untraceable": {
+    description: "cannot be tracked or found",
+    academic: ["un-trackable", "undetectable"],
+    simple: ["hidden", "unfindable"]
+  },
+  "manufactured": {
+    description: "made in large quantities",
+    academic: ["fabricated", "produced"],
+    simple: ["made", "created"]
+  },
+  "rudimentary": {
+    description: "basic and simple",
+    academic: ["elementary", "primitive"],
+    simple: ["basic", "simple"]
+  },
+  "circumvent": {
+    description: "find a way around something",
+    academic: ["evade", "bypass"],
+    simple: ["avoid", "get around"]
+  },
+  "considerably": {
+    description: "to a large degree",
+    academic: ["substantially", "significantly"],
+    simple: ["greatly", "a lot"]
+  },
+  "discharging": {
+    description: "firing or releasing",
+    academic: ["expelling", "emitting"],
+    simple: ["firing", "shooting"]
+  },
+  "structural": {
+    description: "related to physical form",
+    academic: ["architectural", "constructional"],
+    simple: ["physical", "build"]
+  },
+  "pervasive": {
+    description: "spread throughout everywhere",
+    academic: ["widespread"],
+    simple: ["common"]
+  },
+  "prohibiting": {
+    description: "officially forbidding",
+    academic: ["banning", "outlawing"],
+    simple: ["stopping", "preventing"]
+  },
+  "proponents": {
+    description: "people who support something",
+    academic: ["advocates", "champions"],
+    simple: ["supporters", "backers"]
+  },
+  "blueprints": {
+    description: "detailed plans for making something",
+    academic: ["schematics", "designs"],
+    simple: ["plans"]
+  },
+  "misuse": {
+    description: "wrong or improper use",
+    academic: ["abuse", "exploitation"],
+    simple: ["wrong use", "abuse"]
+  },
+  "grappling": {
+    description: "struggling to deal with something",
+    academic: ["wrestling", "contending"],
+    simple: ["dealing with"]
+  },
+  "extremists": {
+    description: "people with very strong and dangerous beliefs",
+    academic: ["fanatics"],
+    simple: ["radicals"]
+  },
+  "trafficking": {
+    description: "illegal trading of goods",
+    academic: ["smuggling"],
+    simple: ["illegal trade"]
+  },
+  "regulations": {
+    description: "official rules and controls",
+    academic: ["directives"],
+    simple: ["rules", "controls"]
+  },
+  "advertise": {
+    description: "to promote or show something publicly",
+    academic: ["promote"],
+    simple: ["promote", "show off"]
+  }
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('essayContainer');
+            const themeToggle = document.getElementById('themeToggle');
+            
+            // Load essays
+            essays.forEach(essay => {
+                const essayCard = createEssayCard(essay);
+                container.appendChild(essayCard);
+            });
+            
+            // Add footer
+            const footer = document.createElement('div');
+            footer.className = 'footer';
+            footer.textContent = 'You\'ve reached the end • Swipe up to browse again';
+            container.appendChild(footer);
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                themeToggle.textContent = document.body.classList.contains('dark-mode') ? '🌙' : '☀️';
+            });
+            
+            // Word click handling (delegated to document)
+            document.addEventListener('click', function(e) {
+                const wordTooltip = document.getElementById('wordTooltip');
+                const fullEssayView = document.getElementById('fullEssayView');
+                
+                // Handle clicks on highlighted words
+                if (e.target.classList.contains('highlight')) {
+                    const isInFullView = !!e.target.closest('.full-essay-view');
+                    const word = e.target.textContent.toLowerCase();
+                    
+                    // If clicking the same word and tooltip is visible, hide it
+                    if (currentTooltipWord === word && wordTooltip.style.display === 'block') {
+                        hideTooltip();
+                        return;
+                    }
+                    
+                    // Otherwise show new tooltip
+                    showTooltip(word, e.target, isInFullView);
+                    e.preventDefault();
+                    return;
+                }
+                
+                // Hide tooltip when clicking elsewhere (except on the tooltip itself)
+                if (e.target !== wordTooltip && !wordTooltip.contains(e.target)) {
+                    hideTooltip();
+                }
+            });
+            
+            // Swipe handling for difficulty change
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            document.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            function handleSwipe() {
+                const threshold = 50; // Minimum swipe distance
+                const currentCard = document.elementFromPoint(window.innerWidth/2, window.innerHeight/2).closest('.essay-card');
+                
+                if (!currentCard) return;
+                
+                const levelSelector = currentCard.querySelector('.level-selector');
+                if (!levelSelector) return;
+                
+                const activeBtn = levelSelector.querySelector('.level-btn.active');
+                if (!activeBtn) return;
+                
+                const buttons = levelSelector.querySelectorAll('.level-btn');
+                const currentIndex = Array.from(buttons).indexOf(activeBtn);
+                
+                if (touchEndX < touchStartX - threshold) {
+                    // Swipe left - next difficulty
+                    const nextIndex = (currentIndex + 1) % buttons.length;
+                    buttons[nextIndex].click();
+                } else if (touchEndX > touchStartX + threshold) {
+                    // Swipe right - previous difficulty
+                    const prevIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+                    buttons[prevIndex].click();
+                }
+            }
+        });
+        
+        function hideTooltip() {
+            const wordTooltip = document.getElementById('wordTooltip');
+            wordTooltip.style.display = 'none';
+            currentTooltipWord = null;
+            currentTooltipElement = null;
+        }
+        
+        function createEssayCard(essay) {
+            const card = document.createElement('div');
+            card.className = 'essay-card';
+            card.dataset.essayId = essay.id;
+            
+            // Create and add header image
+            const headerImg = document.createElement('img');
+            headerImg.className = 'header-image';
+            headerImg.src = essay.image;
+            headerImg.alt = essay.title;
+            card.appendChild(headerImg);
+            
+            // Create controls container
+            const controls = document.createElement('div');
+            controls.className = 'controls-container';
+            
+            // Create difficulty selector
+            const levelSelector = document.createElement('div');
+            levelSelector.className = 'level-selector';
+            
+            const levels = [
+                { id: 'level1', label: 'Level 1' },
+                { id: 'level2', label: 'Level 2' },
+                { id: 'level3', label: 'Level 3' }
+            ];
+            
+            levels.forEach(level => {
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                btn.dataset.level = level.id;
+                btn.textContent = level.label;
+                
+                if (level.id === 'level1') {
+                    btn.classList.add('active');
+                }
+                
+                btn.addEventListener('click', function() {
+                    // Update active button
+                    levelSelector.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update content
+                    content.innerHTML = highlightKeywords(essay.levels[level.id]);
+                });
+                
+                levelSelector.appendChild(btn);
+            });
+            
+            controls.appendChild(levelSelector);
+            
+            // Create read full button
+            const readFullBtn = document.createElement('button');
+            readFullBtn.addEventListener('click', function() {
+                showFullEssay(essay);
+            });
+            controls.appendChild(readFullBtn);
+            
+            card.appendChild(controls);
+            
+            const title = document.createElement('h2');
+            title.className = 'essay-title';
+            title.textContent = essay.title;
+            
+            const content = document.createElement('div');
+            content.className = 'essay-content';
+            content.innerHTML = highlightKeywords(essay.levels.level1);
+            
+            card.appendChild(title);
+            card.appendChild(content);
+            
+            return card;
+        }
+        
+        function highlightKeywords(text) {
+            let result = text;
+            Object.keys(wordData).forEach(word => {
+                const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                result = result.replace(regex, `<span class="highlight">$&</span>`);
+            });
+            return result;
+        }
+        
+        function showTooltip(word, element, isInFullView = false) {
+            const tooltip = document.getElementById('wordTooltip');
+            const tooltipWord = document.getElementById('tooltipWord');
+            const wordDescription = document.getElementById('wordDescription');
+            const academicList = document.getElementById('academicSynonyms');
+            const simpleList = document.getElementById('simpleSynonyms');
+            
+            // Get the word's position relative to the viewport
+            const rect = element.getBoundingClientRect();
+            
+            // Calculate tooltip position accounting for scroll
+            const scrollX = window.scrollX || window.pageXOffset;
+            const scrollY = window.scrollY || window.pageYOffset;
+            
+            // Position the tooltip below the word
+            let leftPosition = rect.left + scrollX;
+            let topPosition = rect.bottom + scrollY + 5; // 5px gap below word
+            
+            // Ensure tooltip stays within viewport
+            const tooltipWidth = 300;
+            const tooltipHeight = 280; // Approximate height
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            // Check if tooltip would go off the right edge
+            if (leftPosition + tooltipWidth > viewportWidth) {
+                leftPosition = viewportWidth - tooltipWidth - 10; // 10px margin from right edge
+            }
+            
+            // Check if tooltip would go off the left edge
+            if (leftPosition < 10) {
+                leftPosition = 10; // 10px margin from left edge
+            }
+            
+            // Check if tooltip would go off the bottom edge
+            if (topPosition + tooltipHeight > scrollY + viewportHeight) {
+                // Position above the word instead
+                topPosition = rect.top + scrollY - tooltipHeight - 5;
+                
+                // If still off screen, position at the top of the viewport
+                if (topPosition < scrollY) {
+                    topPosition = scrollY + 10;
+                }
+            }
+            
+            // Apply the calculated position
+            tooltip.style.left = `${leftPosition}px`;
+            tooltip.style.top = `${topPosition}px`;
+            
+            // Set the word in the tooltip header
+            tooltipWord.textContent = word.charAt(0).toUpperCase() + word.slice(1);
+            
+            // Clear previous content
+            wordDescription.innerHTML = '';
+            academicList.innerHTML = '';
+            simpleList.innerHTML = '';
+            
+            // Add word data if it exists
+            if (wordData[word]) {
+                // Add description
+                wordDescription.textContent = wordData[word].description;
+                
+                // Add academic synonyms
+                wordData[word].academic.forEach(syn => {
+                    const li = document.createElement('li');
+                    li.textContent = syn;
+                    academicList.appendChild(li);
+                });
+                
+                // Add simple synonyms
+                wordData[word].simple.forEach(syn => {
+                    const li = document.createElement('li');
+                    li.textContent = syn;
+                    simpleList.appendChild(li);
+                });
+            } else {
+                // Fallback for words not in our database
+                wordDescription.textContent = "No description available.";
+                academicList.innerHTML = '<li>No academic synonyms found</li>';
+                simpleList.innerHTML = '<li>No simple synonyms found</li>';
+            }
+            
+            // Show the tooltip
+            tooltip.style.display = 'block';
+            
+            // Update current tooltip state
+            currentTooltipWord = word;
+            currentTooltipElement = element;
+            
+            // Prevent tooltip from closing when clicking on it
+            tooltip.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+        
+        function showFullEssay(essay) {
+            // Create full essay view if it doesn't exist
+            let fullEssayView = document.getElementById('fullEssayView');
+            
+            if (!fullEssayView) {
+                fullEssayView = document.createElement('div');
+                fullEssayView.id = 'fullEssayView';
+                fullEssayView.className = 'full-essay-view';
+                
+                const header = document.createElement('div');
+                header.className = 'full-essay-header';
+                
+                const title = document.createElement('h2');
+                title.className = 'full-essay-title';
+                
+                const backBtn = document.createElement('button');
+                backBtn.className = 'back-btn';
+                backBtn.innerHTML = '&larr; Back';
+                backBtn.addEventListener('click', function() {
+                    fullEssayView.classList.remove('active');
+                });
+                
+                const content = document.createElement('div');
+                content.className = 'full-essay-content';
+                
+                header.appendChild(title);
+                header.appendChild(backBtn);
+                fullEssayView.appendChild(header);
+                fullEssayView.appendChild(content);
+                
+                document.body.appendChild(fullEssayView);
+            }
+            
+            // Set content
+            const title = fullEssayView.querySelector('.full-essay-title');
+            const content = fullEssayView.querySelector('.full-essay-content');
+            
+            title.textContent = essay.title;
+            
+            // Get current level
+            const currentCard = document.querySelector(`.essay-card[data-essay-id="${essay.id}"]`);
+            const activeLevel = currentCard.querySelector('.level-btn.active').dataset.level;
+            
+            content.innerHTML = highlightKeywords(essay.levels.full[activeLevel]);
+            
+            // Show the full essay view
+            fullEssayView.classList.add('active');
+        }
+    </script>
+</body>
+</html>
