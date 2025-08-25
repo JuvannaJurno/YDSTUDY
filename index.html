@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quiz Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
       box-sizing: border-box;
@@ -15,154 +16,193 @@
       font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: #f7f7f7;
+      background: #f8f9fa;
       color: #333;
       min-height: 100vh;
     }
     
     header {
-      background: #8e44ad;
+      background: linear-gradient(135deg, #8e44ad 0%, #6c5ce7 100%);
       color: #fff;
-      padding: 1.5rem 1rem;
+      padding: 2rem 1rem;
       text-align: center;
-      font-size: 1.6rem;
-      font-weight: bold;
+      font-size: 2.2rem;
+      font-weight: 800;
       position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
     .subtitle {
-      font-size: 0.9rem;
-      font-weight: normal;
-      margin-top: 0.5rem;
+      font-size: 1rem;
+      font-weight: 400;
+      margin-top: 0.75rem;
       opacity: 0.9;
+      letter-spacing: 0.5px;
+    }
+    
+    .instruction {
+      text-align: center;
+      margin: 1rem auto;
+      max-width: 500px;
+      color: #8e44ad;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(142, 68, 173, 0.1);
+      padding: 10px;
+      border-radius: 10px;
+    }
+    
+    .instruction i {
+      color: #6c5ce7;
     }
     
     .container {
       max-width: 500px;
-      margin: 2rem auto;
-      padding: 1.5rem;
+      margin: 1.5rem auto;
+      padding: 2rem;
       background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
       text-align: center;
+      position: relative;
     }
     
     .hub h2 {
-      margin-bottom: 1.5rem;
-      font-size: 1.3rem;
+      margin-bottom: 1.8rem;
+      font-size: 1.5rem;
       color: #444;
+      font-weight: 700;
+      position: relative;
+      padding-bottom: 0.5rem;
+      text-align: center;
+    }
+    
+    .hub h2:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(135deg, #8e44ad 0%, #6c5ce7 100%);
+      border-radius: 3px;
+    }
+    
+    .quiz-btn, .article-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin: 1rem 0;
+      padding: 1.2rem 1.5rem;
+      font-size: 1.05rem;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
       font-weight: 600;
+      text-align: left;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
     }
     
     .quiz-btn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      margin: 0.75rem 0;
-      padding: 1rem 1.2rem;
-      font-size: 1rem;
-      background: #8e44ad;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-weight: 600;
+      background: linear-gradient(135deg, #8e44ad 0%, #6c5ce7 100%);
     }
     
     .quiz-btn:hover {
-      background: #7d3c98;
-      transform: translateY(-2px);
-    }
-    
-    .quiz-btn span {
-      font-size: 1.1rem;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(106, 90, 205, 0.25);
     }
     
     .article-btn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      margin: 0.75rem 0;
-      padding: 1rem 1.2rem;
-      font-size: 1rem;
-      background: #3498db;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-weight: 600;
+      background: linear-gradient(135deg, #3498db 0%, #2c91d3 100%);
     }
     
     .article-btn:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(52, 152, 219, 0.25);
     }
     
-    .coming-soon {
+    .btn-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      flex-grow: 1;
+    }
+    
+    .btn-title {
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    
+    .difficulty {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.25);
+      margin-top: 0.4rem;
+    }
+    
+    .level-3 {
+      background: rgba(231, 76, 60, 0.8);
+    }
+    
+    .level-2 {
+      background: rgba(243, 156, 18, 0.8);
+    }
+    
+    .btn-icon {
+      font-size: 1.2rem;
+      margin-left: 0.5rem;
+    }
+    
+    .coming-soon-container {
+      opacity: 0.7;
+    }
+    
+    .coming-soon-container h2 {
+      color: #888;
+    }
+    
+    .coming-soon-btn {
       background: #e0e0e0;
       color: #888;
       cursor: not-allowed;
     }
     
-    .coming-soon:hover {
-      background: #e0e0e0;
+    .coming-soon-btn:hover {
       transform: none;
-    }
-    
-    .feature-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 0.9rem 1.2rem;
-      background: #f39c12;
-      color: white;
-      border: none;
-      border-radius: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      transition: all 0.2s ease;
-      z-index: 100;
-    }
-    
-    .feature-btn:hover {
-      background: #e67e22;
-      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     
     footer {
       text-align: center;
-      padding: 1.5rem;
-      color: #888;
-      font-size: 0.8rem;
+      padding: 2rem;
+      color: #777;
+      font-size: 0.85rem;
       margin-top: 2rem;
     }
     
     @media (max-width: 600px) {
       .container {
         margin: 1.5rem;
-        padding: 1.2rem;
+        padding: 1.5rem;
       }
       
       header {
-        padding: 1.2rem 1rem;
-        font-size: 1.4rem;
+        padding: 1.5rem 1rem;
+        font-size: 1.8rem;
       }
       
       .quiz-btn, .article-btn {
-        padding: 0.9rem 1rem;
-        font-size: 0.95rem;
-      }
-      
-      .feature-btn {
-        bottom: 15px;
-        right: 15px;
-        padding: 0.8rem 1rem;
-        font-size: 0.9rem;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
       }
     }
   </style>
@@ -173,19 +213,57 @@
     <div class="subtitle">Expand your knowledge one quiz at a time</div>
   </header>
   
+  <div class="instruction">
+    <i class="fas fa-lightbulb"></i> Follow the path downward for the best results
+  </div>
+  
   <div class="container hub">
-    <h2>Select a Quiz</h2>
+    <h2>YDS Starter Pack</h2>
     <button class="quiz-btn" onclick="window.location.href='Q1S.html'">
-      Vocabulary Starter Pack 1 <span>▶</span>
+      <div class="btn-content">
+        <div class="btn-title">Vocabulary Starter Pack 1</div>
+      </div>
+      <div class="btn-icon"><i class="fas fa-arrow-right"></i></div>
     </button>
+    
     <button class="quiz-btn" onclick="window.location.href='Q2S.html'">
-      Vocabulary Starter Pack 2 <span>▶</span>
+      <div class="btn-content">
+        <div class="btn-title">Vocabulary Starter Pack 2</div>
+      </div>
+      <div class="btn-icon"><i class="fas fa-arrow-right"></i></div>
     </button>
+    
     <button class="article-btn" onclick="window.location.href='r1.html'">
-      Read An Article 1 <span>📖</span>
+      <div class="btn-content">
+        <div class="btn-title">Read An Article: AI and Teens: A New Study</div>
+        <div class="difficulty level-3">Level 3 ★★★</div>
+      </div>
+      <div class="btn-icon"><i class="fas fa-book-open"></i></div>
     </button>
-    <button class="quiz-btn coming-soon">
-      Coming Soon <span>🔒</span>
+    
+    <button class="article-btn" onclick="window.location.href='r2.html'">
+      <div class="btn-content">
+        <div class="btn-title">Read An Article: 3D-Printed Guns Article</div>
+        <div class="difficulty level-2">Level 2 ★★</div>
+      </div>
+      <div class="btn-icon"><i class="fas fa-book-open"></i></div>
+    </button>
+  </div>
+  
+  <div class="container coming-soon-container">
+    <h2>Coming Soon</h2>
+    <button class="quiz-btn coming-soon-btn">
+      <div class="btn-content">
+        <div class="btn-title">Coming Soon</div>
+      </div>
+      <div class="btn-icon"><i class="fas fa-lock"></i></div>
+    </button>
+    
+    <button class="article-btn coming-soon-btn">
+      <div class="btn-content">
+        <div class="btn-title">Coming Soon</div>
+      </div>
+      <div class="btn-icon"><i class="fas fa-lock"></i></div>
     </button>
   </div>
   
