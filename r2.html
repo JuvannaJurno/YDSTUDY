@@ -13,6 +13,7 @@
             --accent-color: #4361ee;
             --secondary-color: #666;
             --border-color: #eee;
+            --font-size: 1.1rem;
         }
 
         .dark-mode {
@@ -38,6 +39,7 @@
             height: 100vh;
             overflow: hidden;
             line-height: 1.7;
+            font-size: var(--font-size);
         }
 
         .container {
@@ -57,28 +59,43 @@
             position: relative;
         }
 
+        .header-container {
+            transition: all 0.5s ease;
+            margin-bottom: 20px;
+        }
+
         .header-image {
             width: 100%;
             height: 200px;
             object-fit: cover;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container.hidden {
+            opacity: 0;
+            height: 0;
+            margin-bottom: 0;
+            overflow: hidden;
         }
 
         .essay-title {
             font-size: 1.5rem;
             font-weight: 500;
-            margin-bottom: 12px;
             color: var(--text-color);
         }
 
         .essay-content {
-            font-size: 1.1rem;
             line-height: 1.8;
-            margin-bottom: 20px;
             flex-grow: 1;
             overflow-y: auto;
+            padding-top: 0;
+            transition: padding-top 0.5s ease;
+        }
+
+        .essay-content.header-hidden {
+            padding-top: 60px; /* Extra padding when header is hidden */
         }
 
         .essay-content p {
@@ -124,6 +141,7 @@
         .tooltip-list {
             list-style: none;
             font-size: 0.9rem;
+            padding-left: 0;
         }
 
         .tooltip-list li {
@@ -139,7 +157,7 @@
             color: var(--accent-color);
         }
 
-        .theme-toggle {
+        .close-button {
             position: fixed;
             top: 16px;
             right: 16px;
@@ -153,7 +171,63 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 100;
+            z-index: 101;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls-container {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            display: flex;
+            gap: 10px;
+            z-index: 101;
+        }
+
+        .theme-toggle {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .font-size-control {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .font-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 0 4px;
+            font-weight: bold;
+        }
+
+        .font-btn:hover {
+            background: var(--accent-color);
+            color: white;
         }
 
         .highlight {
@@ -182,19 +256,32 @@
                 font-size: 1.3rem;
             }
             
-            .essay-content {
-                font-size: 1rem;
-            }
-            
             .word-tooltip {
                 max-width: 280px;
                 padding: 12px;
+            }
+            
+            .controls-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .essay-content.header-hidden {
+                padding-top: 100px; /* More padding for mobile when header is hidden */
             }
         }
     </style>
 </head>
 <body>
-    <button class="theme-toggle" id="themeToggle">☀️</button>
+    <button class="close-button" id="closeButton">✕</button>
+    
+    <div class="controls-container">
+        <div class="font-size-control" id="fontSizeControl">
+            <button class="font-btn" id="decreaseFont">A-</button>
+            <button class="font-btn" id="increaseFont">A+</button>
+        </div>
+        <button class="theme-toggle" id="themeToggle">☀️</button>
+    </div>
     
     <div class="container" id="essayContainer">
         <!-- Essay will be loaded here -->
@@ -217,6 +304,8 @@
         // Track tooltip state
         let currentTooltipWord = null;
         let currentTooltipElement = null;
+        let currentFontSize = 1.1; // Default font size in rem
+        let headerVisible = true;
 
         // Single essay with the provided content
         const essay = {
@@ -374,6 +463,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('essayContainer');
             const themeToggle = document.getElementById('themeToggle');
+            const decreaseFontBtn = document.getElementById('decreaseFont');
+            const increaseFontBtn = document.getElementById('increaseFont');
+            const closeButton = document.getElementById('closeButton');
             
             // Load essay
             const essayCard = createEssayCard(essay);
@@ -389,6 +481,39 @@
             themeToggle.addEventListener('click', function() {
                 document.body.classList.toggle('dark-mode');
                 themeToggle.textContent = document.body.classList.contains('dark-mode') ? '🌙' : '☀️';
+            });
+            
+            // Font size controls
+            decreaseFontBtn.addEventListener('click', function() {
+                if (currentFontSize > 0.8) {
+                    currentFontSize -= 0.1;
+                    updateFontSize();
+                }
+            });
+            
+            increaseFontBtn.addEventListener('click', function() {
+                if (currentFontSize < 1.6) {
+                    currentFontSize += 0.1;
+                    updateFontSize();
+                }
+            });
+            
+            // Close button functionality
+            closeButton.addEventListener('click', function() {
+                const headerContainer = document.querySelector('.header-container');
+                const content = document.querySelector('.essay-content');
+                
+                if (headerVisible) {
+                    headerContainer.classList.add('hidden');
+                    content.classList.add('header-hidden');
+                    closeButton.textContent = '↺';
+                } else {
+                    headerContainer.classList.remove('hidden');
+                    content.classList.remove('header-hidden');
+                    closeButton.textContent = '✕';
+                }
+                
+                headerVisible = !headerVisible;
             });
             
             // Word click handling (delegated to document)
@@ -418,6 +543,10 @@
             });
         });
         
+        function updateFontSize() {
+            document.documentElement.style.setProperty('--font-size', currentFontSize + 'rem');
+        }
+        
         function hideTooltip() {
             const wordTooltip = document.getElementById('wordTooltip');
             wordTooltip.style.display = 'none';
@@ -430,22 +559,28 @@
             card.className = 'essay-card';
             card.dataset.essayId = essay.id;
             
+            // Create header container
+            const headerContainer = document.createElement('div');
+            headerContainer.className = 'header-container';
+            
             // Create and add header image
             const headerImg = document.createElement('img');
             headerImg.className = 'header-image';
             headerImg.src = 'https://news-in-levels-1252061619.cos.ap-guangzhou.myqcloud.com/covers/1750336623270-ea26bdf0-4b80-11f0-86d5-3b52b53af158.png.webp/L';
             headerImg.alt = '3D-Printed Guns: A Growing Concern';
-            card.appendChild(headerImg);
+            headerContainer.appendChild(headerImg);
             
             const title = document.createElement('h2');
             title.className = 'essay-title';
             title.textContent = essay.title;
+            headerContainer.appendChild(title);
+            
+            card.appendChild(headerContainer);
             
             const content = document.createElement('div');
             content.className = 'essay-content';
             content.innerHTML = highlightKeywords(essay.content);
             
-            card.appendChild(title);
             card.appendChild(content);
             
             return card;
